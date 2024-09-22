@@ -1,0 +1,49 @@
+name: nebby
+channels:
+  - conda-forge
+  - defaults
+  - anaconda
+dependencies:
+  - python=3.12.*
+  # general deps
+  - cmake
+  - boost # noseyparker source build
+  - patch # noseyparker source build
+  - pkg-config # noseyparker source build
+  - coreutils # noseyparker source build
+  # golang deps
+  - conda-forge::go
+  - conda-forge::go-cgo
+  # rust deps
+  - rust
+  # snscrape deps
+  - lxml
+  - libxml2
+  - libxslt
+  # python dev libraries
+  - click
+  # devops
+  - git
+  # pip installs
+  - pip
+  - pipx
+  - pip:
+      - build
+      # https://github.com/sherlock-project/sherlock
+      - sherlock-project
+      # https://github.com/megadose
+      - holehe
+      - onionsearch
+      - nqntnqnqmb
+      - toutatis
+      - ignorant
+      # https://github.com/JustAnotherArchivist/snscrape
+      - snscrape
+      # https://github.com/m8sec/CrossLinked
+      - crosslinked
+      # https://github.com/elceef/dnstwist
+      - dnstwist[full]
+      # https://github.com/C3n7ral051nt4g3ncy
+      - masto
+      # https://github.com/bee-san
+      - pywhat[optimize]
