@@ -11,6 +11,9 @@ dependencies:
   - patch # noseyparker source build
   - pkg-config # noseyparker source build
   - coreutils # noseyparker source build
+  - zlib # pillow
+  - jpeg # pillow
+  - libpcap # naabu on linux
   # golang deps
   - conda-forge::go
   - conda-forge::go-cgo

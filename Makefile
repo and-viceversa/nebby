@@ -2,9 +2,10 @@ all: setup env nebby tools
 
 SHELL := /bin/bash
 OS_NAME := $(shell uname -s | tr A-Z a-z)
+export PATH = $(shell echo $$PATH:$$HOME/miniconda3/bin)
 CONDA_ACTIVATE=source $$(conda info --base)/etc/profile.d/conda.sh ; conda activate ; conda activate
 BREW := miniconda geoipupdate
-APT := pkg-config coreutils geoipupdate curl sq
+APT := pkg-config coreutils geoipupdate curl sq gccmultilib zsh
 TOOLS := gitfive_temporary maigret ghunt subfinder alterx httpx dnsx naabu katana cloudlist trufflehog noseyparker fingerprintx lemmeknow awsrecon ares photon quidam blackbird sn0int dnstwist
 
 .PHONY: setup
@@ -13,7 +14,7 @@ setup: checkos install_prerequisites update_packages
 .PHONY: checkos
 checkos:
 	# Operating system checks
-	@if [ $(OS_NAME) == "linux" -o $(OS_NAME) == "darwin" ]; then \
+	@if [ $(OS_NAME) == "linux" ] || [ $(OS_NAME) == "darwin" ]; then \
 		echo "We're running $(OS_NAME)"; \
 	else \
 		echo "This OS doesn't support nebby"; \
@@ -23,26 +24,36 @@ checkos:
 .PHONY: install_prerequisites
 install_prerequisites: checkos
 	# Install prerequisites
-	@if [ $(OS_NAME) == "darwin" -a ! command -v brew &> /dev/null ]; then \
+	@if [ $(OS_NAME) == "darwin" ] && ! [ command -v brew &> /dev/null ]; then \
 		NONINTERACTIVE=-1 $(SHELL) -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"; \
+		brew install -q $(BREW); \
+		conda init --all; \
 	elif [ $(OS_NAME) == "darwin" ]; then \
 		brew install -q $(BREW); \
+		conda init --all; \
+	elif [ $(OS_NAME) == "linux" ] && ! [ -x $$HOME/miniconda3/bin/conda ]; then \
+		mkdir -p $$HOME/miniconda3; \
+		curl -L -o $$HOME/miniconda3/miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh; \
+		bash $$HOME/miniconda3/miniconda.sh -b -u -p $$HOME/miniconda3; \
+		rm $$HOME/miniconda3/miniconda.sh; \
+		$$HOME/miniconda3/bin/conda init --all; \
+		sudo add-apt-repository -y ppa:maxmind/ppa; \
+		sudo apt -q -y install $(APT); \
 	else \
 		sudo add-apt-repository -y ppa:maxmind/ppa; \
-		sudo apt -y install $(APT); \
-		$(SHELL) <(curl -L https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh); \
+		sudo apt -q -y install $(APT); \
 	fi
-	conda init --all
 
 .PHONY: update_packages
 update_packages: checkos install_prerequisites
 	# Update packages
 	@if [ $(OS_NAME) == "darwin" ]; then \
-  		brew update && brew upgrade; \
-  	else \
-  		sudo apt -y update && sudo apt -y upgrade; \
-  	fi
-	conda update -q -y conda
+		brew update && brew upgrade; \
+	else \
+		sudo apt -q -y update && sudo apt -q -y upgrade; \
+	fi
+	@$(CONDA_ACTIVATE) base; \
+	conda update -q -y conda; \
 	conda update -q -y -n base conda
 
 .PHONY: env
@@ -141,6 +152,7 @@ httpx:
 	# Install httpx
 	@$(CONDA_ACTIVATE) nebby; \
 	export GOBIN=$$CONDA_PREFIX/bin; \
+	rm $$CONDA_PREFIX/bin/httpx; \
 	go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest
 
 .PHONY: dnsx
@@ -187,14 +199,11 @@ noseyparker:
 	@-if [ $(OS_NAME) == "darwin" ]; then \
 		brew install noseyparker; \
 	else \
-		cd clones; \
-		rm -rf noseyparker; \
-		git clone https://github.com/praetorian-inc/noseyparker.git; \
-		cd noseyparker; \
-		rm -rf release && ./scripts/create-release.zsh; \
-		cp ./target/release/noseyparker-cli $$CONDA_PREFIX/bin/noseyparker-cli; \
+		cd clones && mkdir noseyparker && cd noseyparker; \
+		curl -L -O https://github.com/praetorian-inc/noseyparker/releases/download/v0.19.0/noseyparker-v0.19.0-x86_64-unknown-linux-gnu.tar.gz; \
+		tar -xzf noseyparker-v0.19.0-x86_64-unknown-linux-gnu.tar.gz; \
+		cp ./bin/noseyparker $$CONDA_PREFIX/bin/noseyparker; \
 	fi
-	@rm -rf ./clones/noseyparker
 
 .PHONY: fingerprintx
 fingerprintx:
@@ -257,8 +266,8 @@ sn0int:
 	else \
 		curl -sSf https://apt.vulns.sexy/kpcyrd.pgp | sq keyring filter -B --handle 64B13F7117D6E07D661BBCE0FE763A64F5E54FD6 | sudo tee /etc/apt/trusted.gpg.d/apt-vulns-sexy.gpg > /dev/null; \
 		echo deb http://apt.vulns.sexy stable main | sudo tee /etc/apt/sources.list.d/apt-vulns-sexy.list; \
-		apt -y update; \
-		apt -y install sn0int; \
+		apt -q -y update; \
+		apt -q -y install sn0int; \
 	fi
 
 .PHONY: dnstwist
@@ -267,7 +276,7 @@ dnstwist:
 	@if [ $(OS_NAME) == "darwin" ]; then \
 		brew install dnstwist; \
 	else \
-		sudo apt -y install dnstwist; \
+		sudo apt -q -y install dnstwist; \
 	fi
 
 
@@ -288,9 +297,11 @@ delete: uninstall
 		brew autoremove -q; \
 		brew cleanup -s --prune 0; \
 	else \
-		sudo apt -y uninstall $(APT); \
-		sudo apt -y uninstall sn0int; \
-		sudo apt -y uninstall dnstwist; \
+		sudo apt -q -y remove $(APT); \
+		sudo apt -q -y remove sn0int; \
+		sudo apt -q -y remove dnstwist; \
+		sudo apt -q -y autoremove; \
+		rm -rf $$HOME/miniconda3; \
 	fi
 
 .PHONY: clean
