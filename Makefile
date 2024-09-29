@@ -199,6 +199,7 @@ noseyparker:
 	@-if [ $(OS_NAME) == "darwin" ]; then \
 		brew install noseyparker; \
 	else \
+		@$(CONDA_ACTIVATE) nebby; \
 		cd clones && mkdir -p noseyparker && cd noseyparker; \
 		curl -L -O https://github.com/praetorian-inc/noseyparker/releases/download/v0.19.0/noseyparker-v0.19.0-x86_64-unknown-linux-gnu.tar.gz; \
 		tar -xzf noseyparker-v0.19.0-x86_64-unknown-linux-gnu.tar.gz; \
