@@ -5,7 +5,7 @@ OS_NAME := $(shell uname -s | tr A-Z a-z)
 export PATH = $(shell echo $$PATH:$$HOME/miniconda3/bin)
 CONDA_ACTIVATE=source $$(conda info --base)/etc/profile.d/conda.sh ; conda activate ; conda activate
 BREW := miniconda geoipupdate
-APT := pkg-config coreutils geoipupdate curl sq gccmultilib zsh
+APT := pkg-config coreutils geoipupdate curl sq gcc-multilib zsh
 TOOLS := gitfive_temporary maigret ghunt subfinder alterx httpx dnsx naabu katana cloudlist trufflehog noseyparker fingerprintx lemmeknow awsrecon ares photon quidam blackbird sn0int dnstwist
 
 .PHONY: setup
@@ -76,7 +76,7 @@ create: uninstall
 	# Create the new environment
 	@$(CONDA_ACTIVATE) base; \
 	conda env create -q --file=environment.yaml; \
-	mkdir clones
+	mkdir -p clones
 
 .PHONY: nebby
 nebby:
@@ -199,7 +199,7 @@ noseyparker:
 	@-if [ $(OS_NAME) == "darwin" ]; then \
 		brew install noseyparker; \
 	else \
-		cd clones && mkdir noseyparker && cd noseyparker; \
+		cd clones && mkdir -p noseyparker && cd noseyparker; \
 		curl -L -O https://github.com/praetorian-inc/noseyparker/releases/download/v0.19.0/noseyparker-v0.19.0-x86_64-unknown-linux-gnu.tar.gz; \
 		tar -xzf noseyparker-v0.19.0-x86_64-unknown-linux-gnu.tar.gz; \
 		cp ./bin/noseyparker $$CONDA_PREFIX/bin/noseyparker; \
@@ -264,10 +264,10 @@ sn0int:
 	@if [ $(OS_NAME) == "darwin" ]; then \
 		brew install sn0int; \
 	else \
-		curl -sSf https://apt.vulns.sexy/kpcyrd.pgp | sq keyring filter -B --handle 64B13F7117D6E07D661BBCE0FE763A64F5E54FD6 | sudo tee /etc/apt/trusted.gpg.d/apt-vulns-sexy.gpg > /dev/null; \
+		curl -sSf https://apt.vulns.xyz/kpcyrd.pgp | sq keyring filter -B --handle 64B13F7117D6E07D661BBCE0FE763A64F5E54FD6 | sudo tee /etc/apt/trusted.gpg.d/apt-vulns-sexy.gpg > /dev/null; \
 		echo deb http://apt.vulns.sexy stable main | sudo tee /etc/apt/sources.list.d/apt-vulns-sexy.list; \
-		apt -q -y update; \
-		apt -q -y install sn0int; \
+		sudo apt -q -y update; \
+		sudo apt -q -y install sn0int; \
 	fi
 
 .PHONY: dnstwist
