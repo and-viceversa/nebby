@@ -1,11 +1,10 @@
-all: setup micromamba nebby tools
+all: setup env nebby tools
 
 SHELL := /bin/bash
 OS_NAME := $(shell uname -s | tr A-Z a-z)
-MAMBA_ACTIVATE=source $$MAMBA_ROOT_PREFIX/etc/profile.d/micromamba.sh ; micromamba activate ; micromamba activate
-export GOBIN := $(shell echo $$MAMBA_ROOT_PREFIX/envs/nebby/bin)
-BREW := micromamba wget geoipupdate
-APT := wget pkg-config coreutils geoipupdate curl sq
+CONDA_ACTIVATE=source $$(conda info --base)/etc/profile.d/conda.sh ; conda activate ; conda activate
+BREW := miniconda geoipupdate
+APT := pkg-config coreutils geoipupdate curl sq
 TOOLS := gitfive_temporary maigret ghunt subfinder alterx httpx dnsx naabu katana cloudlist trufflehog noseyparker fingerprintx lemmeknow awsrecon ares photon quidam blackbird sn0int dnstwist
 
 .PHONY: setup
@@ -27,15 +26,13 @@ install_prerequisites: checkos
 	@if [ $(OS_NAME) == "darwin" -a ! command -v brew &> /dev/null ]; then \
 		NONINTERACTIVE=-1 $(SHELL) -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"; \
 	elif [ $(OS_NAME) == "darwin" ]; then \
-		brew install $(BREW); \
+		brew install -q $(BREW); \
 	else \
-		sudo add-apt-repository ppa:maxmind/ppa; \
-		sudo apt install $(APT) ; \
-		$(SHELL) <(curl -L micro.mamba.pm/install.sh); \
+		sudo add-apt-repository -y ppa:maxmind/ppa; \
+		sudo apt -y install $(APT); \
+		$(SHELL) <(curl -L https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh); \
 	fi
-	micromamba shell init -s bash --root-prefix=$$HOME/micromamba 1> /dev/null
-	micromamba shell init -s zsh --root-prefix=$$HOME/micromamba 1> /dev/null
-	micromamba shell init -s fish --root-prefix=$$HOME/micromamba 1> /dev/null
+	conda init --all
 
 .PHONY: update_packages
 update_packages: checkos install_prerequisites
@@ -45,17 +42,19 @@ update_packages: checkos install_prerequisites
   	else \
   		sudo apt -y update && sudo apt -y upgrade; \
   	fi
-	micromamba self-update -c conda-forge anaconda 1> /dev/null
+	conda update -q -y conda
+	conda update -q -y -n base conda
 
-.PHONY: micromamba
-micromamba: uninstall create
+.PHONY: env
+env: uninstall create
 
 .PHONY: uninstall
 uninstall:
 	# Remove the old environment
-	# If this command throws "No Prefix found at:" errors, you can safely ignore them
-	@-pipx uninstall-all
-	@-micromamba env remove -y -q -n nebby
+	@-$(CONDA_ACTIVATE) nebby; \
+	pipx uninstall-all
+	@-$(CONDA_ACTIVATE) base; \
+	conda env remove -y -q -n nebby
 	@rm -rf ./clones
 	@rm -rf ./build
 	@rm -rf ./dist
@@ -64,16 +63,17 @@ uninstall:
 .PHONY: create
 create: uninstall
 	# Create the new environment
-	@micromamba create -y -f environment.yaml
-	@mkdir clones
+	@$(CONDA_ACTIVATE) base; \
+	conda env create -q --file=environment.yaml; \
+	mkdir clones
 
 .PHONY: nebby
 nebby:
-	# Build Nebby
-	@$(MAMBA_ACTIVATE) nebby ; \
-	pip uninstall -y nebby; \
-	python -m build ; \
-	pip install ./dist/nebby-0.0.1-py3-none-any.whl
+	# Build nebby
+	@$(CONDA_ACTIVATE) nebby; \
+	pip uninstall -q -y nebby; \
+	python -m build &> /dev/null; \
+	pip install -q ./dist/nebby-0.0.1-py3-none-any.whl
 
 .PHONY: tools
 tools: $(TOOLS)
@@ -82,154 +82,150 @@ tools: $(TOOLS)
 .PHONY: gitfive_canonical
 gitfive_canonical:
 	# Install GitFive
-	@$(MAMBA_ACTIVATE) nebby ; \
-	pipx ensurepath
-	@$(MAMBA_ACTIVATE) nebby ; \
+	@$(CONDA_ACTIVATE) nebby; \
+	pipx ensurepath --force
+	@$(CONDA_ACTIVATE) nebby; \
 	pipx install gitfive --force
 
 .PHONY: gitfive_temporary
 gitfive_temporary:
 	# Install GitFive
-	@$(MAMBA_ACTIVATE) nebby; \
+	@$(CONDA_ACTIVATE) nebby; \
 	cd clones; \
 	rm -rf GitFive; \
-	git clone https://github.com/mxrch/GitFive.git; \
+	git clone -q https://github.com/mxrch/GitFive.git; \
 	cd GitFive; \
 	if [ $(OS_NAME) == "darwin" ]; then \
 		sed -i '' -e 's/0.20.5/0.25.1/g' requirements.txt; \
 	else \
 		sed -i 's/0.20.5/0.25.1/g' requirements.txt; \
 	fi; \
-	pip install .
+	pip -q install .
+	@rm -rf ./clones/GitFive
 
 .PHONY: ghunt
 ghunt:
 	# Install ghunt
-	@$(MAMBA_ACTIVATE) nebby ; \
-	pipx ensurepath
-	@$(MAMBA_ACTIVATE) nebby ; \
+	@$(CONDA_ACTIVATE) nebby; \
+	pipx ensurepath --force
+	@$(CONDA_ACTIVATE) nebby; \
 	pipx install ghunt --force; \
-	pipx ensurepath
 
 .PHONY: maigret
 maigret:
 	# Install maigret
-	@$(MAMBA_ACTIVATE) nebby; \
+	@$(CONDA_ACTIVATE) nebby; \
 	cd clones; \
 	rm -rf maigret; \
-	git clone https://github.com/soxoj/maigret.git; \
+	git clone -q https://github.com/soxoj/maigret.git; \
 	cd maigret; \
-	pip install .
+	pip install -q .
+	@rm -rf ./clones/maigret
 
 .PHONY: subfinder
 subfinder:
 	# Install Subfinder
-	@$(MAMBA_ACTIVATE) nebby ; \
-	export GOBIN=$(GOBIN); \
+	@$(CONDA_ACTIVATE) nebby ; \
+	export GOBIN=$$CONDA_PREFIX/bin; \
 	go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
 
 .PHONY: alterx
 alterx:
 	# Install AlterX
-	@$(MAMBA_ACTIVATE) nebby ; \
-	export GOBIN=$(GOBIN); \
+	@$(CONDA_ACTIVATE) nebby; \
+	export GOBIN=$$CONDA_PREFIX/bin; \
 	go install github.com/projectdiscovery/alterx/cmd/alterx@latest
 
 .PHONY: httpx
 httpx:
 	# Install httpx
-	@$(MAMBA_ACTIVATE) nebby ; \
-	export GOBIN=$(GOBIN); \
+	@$(CONDA_ACTIVATE) nebby; \
+	export GOBIN=$$CONDA_PREFIX/bin; \
 	go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest
 
 .PHONY: dnsx
 dnsx:
 	# Install dnsx
-	@$(MAMBA_ACTIVATE) nebby ; \
-	export GOBIN=$(GOBIN); \
+	@$(CONDA_ACTIVATE) nebby; \
+	export GOBIN=$$CONDA_PREFIX/bin; \
 	go install -v github.com/projectdiscovery/dnsx/cmd/dnsx@latest
 
 .PHONY: naabu
 naabu:
 	# Install naabu
-	@$(MAMBA_ACTIVATE) nebby ; \
-	export GOBIN=$(GOBIN); \
+	@$(CONDA_ACTIVATE) nebby; \
+	export GOBIN=$$CONDA_PREFIX/bin; \
 	go install -v github.com/projectdiscovery/naabu/v2/cmd/naabu@latest
 
 .PHONY: katana
 katana:
 	# Install katana
-	@$(MAMBA_ACTIVATE) nebby ; \
-	export GOBIN=$(GOBIN); \
+	@$(CONDA_ACTIVATE) nebby; \
+	export GOBIN=$$CONDA_PREFIX/bin; \
 	go install github.com/projectdiscovery/katana/cmd/katana@latest
 
 .PHONY: cloudlist
 cloudlist:
 	# Install cloudlist
-	@$(MAMBA_ACTIVATE) nebby ; \
-	export GOBIN=$(GOBIN); \
+	@$(CONDA_ACTIVATE) nebby; \
+	export GOBIN=$$CONDA_PREFIX/bin; \
 	go install -v github.com/projectdiscovery/cloudlist/cmd/cloudlist@latest
 
 .PHONY: trufflehog
 trufflehog:
 	# Install trufflehog
-	@$(MAMBA_ACTIVATE) nebby ; \
-	export GOBIN=$(GOBIN); \
+	@-$(CONDA_ACTIVATE) nebby; \
+	export GOBIN=$$CONDA_PREFIX/bin; \
 	cd clones; \
-	git clone https://github.com/trufflesecurity/trufflehog.git; \
+	git clone -q https://github.com/trufflesecurity/trufflehog.git; \
 	cd trufflehog; go install
+	@rm -rf ./clones/trufflehog
 
 .PHONY: noseyparker
 noseyparker:
 	# Install noseyparker
-	@if [ $(OS_NAME) == "darwin" ]; then \
+	@-if [ $(OS_NAME) == "darwin" ]; then \
 		brew install noseyparker; \
 	else \
-		export CARGO_TARGET_DIR=$(GOBIN); \
 		cd clones; \
 		rm -rf noseyparker; \
 		git clone https://github.com/praetorian-inc/noseyparker.git; \
 		cd noseyparker; \
 		rm -rf release && ./scripts/create-release.zsh; \
-		cp ./target/release/noseyparker-cli $(shell echo $(GOBIN)); \
+		cp ./target/release/noseyparker-cli $$CONDA_PREFIX/bin/noseyparker-cli; \
 	fi
+	@rm -rf ./clones/noseyparker
 
 .PHONY: fingerprintx
 fingerprintx:
 	# Install fingerprintx
-	@$(MAMBA_ACTIVATE) nebby ; \
-	export GOBIN=$(GOBIN); \
+	@$(CONDA_ACTIVATE) nebby; \
+	export GOBIN=$$CONDA_PREFIX/bin; \
 	go install github.com/praetorian-inc/fingerprintx/cmd/fingerprintx@latest
 
 .PHONY: lemmeknow
 lemmeknow:
 	# Install lemmeknow
-	@$(MAMBA_ACTIVATE) nebby ; \
-	export CARGO_TARGET_DIR=$(GOBIN); \
-	cargo install lemmeknow; \
-	cp ~/.cargo/bin/lemmeknow $(shell echo $(GOBIN)); \
-	rm ~/.cargo/bin/lemmeknow
+	@$(CONDA_ACTIVATE) nebby; \
+	cargo install lemmeknow --root $$CONDA_PREFIX
 
 .PHONY: awsrecon
 awsrecon:
 	# Install awsrecon
-	@$(MAMBA_ACTIVATE) nebby ; \
-	export GOBIN=$(GOBIN); \
+	@$(CONDA_ACTIVATE) nebby; \
+	export GOBIN=$$CONDA_PREFIX/bin; \
 	go install -v github.com/hupe1980/awsrecon@latest
 
 .PHONY: ares
 ares:
 	# Install ares
-	@$(MAMBA_ACTIVATE) nebby ; \
-	export CARGO_TARGET_DIR=$(GOBIN); \
-	cargo install project_ares; \
-	cp ~/.cargo/bin/ares $(shell echo $(GOBIN)); \
-	rm ~/.cargo/bin/ares
+	@$(CONDA_ACTIVATE) nebby; \
+	cargo install project_ares --root $$CONDA_PREFIX
 
 .PHONY: photon
 photon:
 	# Install photon
-	@$(MAMBA_ACTIVATE) nebby ; \
+	@$(CONDA_ACTIVATE) nebby; \
 	cd ./clones; \
 	git clone https://github.com/s0md3v/Photon.git; \
 	cd Photon; \
@@ -238,20 +234,20 @@ photon:
 .PHONY: quidam
 quidam:
 	# Install quidam
-	@$(MAMBA_ACTIVATE) nebby ; \
+	@$(CONDA_ACTIVATE) nebby; \
 	cd ./clones; \
 	git clone https://github.com/megadose/Quidam.git; \
 	cd Quidam; \
-	pip install .
+	pip install -q .
 
 .PHONY: blackbird
 blackbird:
 	# Install blackbird
-	@$(MAMBA_ACTIVATE) nebby ; \
+	@$(CONDA_ACTIVATE) nebby; \
 	cd ./clones; \
 	git clone https://github.com/p1ngul1n0/blackbird.git; \
 	cd blackbird; \
-	pip install -r requirements.txt
+	pip install -q -r requirements.txt
 
 .PHONY: sn0int
 sn0int:
@@ -271,7 +267,7 @@ dnstwist:
 	@if [ $(OS_NAME) == "darwin" ]; then \
 		brew install dnstwist; \
 	else \
-		sudo apt install dnstwist; \
+		sudo apt -y install dnstwist; \
 	fi
 
 
@@ -279,11 +275,11 @@ dnstwist:
 delete: uninstall
 	# Deleting all nebby installs and clearing caches
 	# Errors in this recipe can be safely ignored
-	@-micromamba clean -y -a &> /dev/null
-	@-micromamba shell deinit bash
-	@-micromamba shell deinit zsh
-	@-micromamba shell deinit fish
-	@-rm -rf $$HOME/micromamba
+	@-$(CONDA_ACTIVATE) nebby; \
+	conda init --reverse --all; \
+	conda clean -y -a &> /dev/null
+	@rm -rf $$HOME/micromamba
+	@rm -rf $$HOME/.conda
 	@if [ $(OS_NAME) == "darwin" ]; then \
 		brew uninstall $(BREW); \
 		brew uninstall noseyparker; \
@@ -292,7 +288,10 @@ delete: uninstall
 		brew autoremove -q; \
 		brew cleanup -s --prune 0; \
 	else \
-		sudo apt uninstall $(APT); \
-		sudo apt uninstall sn0int; \
+		sudo apt -y uninstall $(APT); \
+		sudo apt -y uninstall sn0int; \
+		sudo apt -y uninstall dnstwist; \
 	fi
-	@which micromamba | xargs rm
+
+.PHONY: clean
+clean: delete setup env nebby tools
