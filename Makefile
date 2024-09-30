@@ -5,7 +5,7 @@ OS_NAME := $(shell uname -s | tr A-Z a-z)
 export PATH = $(shell echo $$PATH:$$HOME/miniconda3/bin)
 CONDA_ACTIVATE=source $$(conda info --base)/etc/profile.d/conda.sh ; conda activate ; conda activate
 BREW := miniconda geoipupdate
-APT := pkg-config coreutils geoipupdate curl sq gcc-multilib zsh
+APT := pkg-config coreutils geoipupdate curl sq g++ gcc-multilib zsh
 TOOLS := gitfive_temporary maigret ghunt subfinder alterx httpx dnsx naabu katana cloudlist trufflehog noseyparker fingerprintx lemmeknow awsrecon ares photon quidam blackbird sn0int dnstwist
 
 .PHONY: setup
@@ -21,17 +21,33 @@ checkos:
 		exit; \
 	fi
 
-.PHONY: install_prerequisites
-install_prerequisites: checkos
-	# Install prerequisites
+.PHONY: install_xcode
+install_xcode:
+	@-if [ $(OS_NAME) == "darwin" ]; then \
+		xcode-select --install; \
+	else \
+		echo
+
+.PHONY: install_brew
+install_brew:
 	@if [ $(OS_NAME) == "darwin" ] && ! [ command -v brew &> /dev/null ]; then \
-		NONINTERACTIVE=-1 $(SHELL) -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"; \
+		export NONINTERACTIVE=-1; \
+		curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh) | bash; \
+	else \
+		echo "# Homebrew already installed"
+
+.PHONY: install_brew_packages
+install_brew_packages:
+	if [ $(OS_NAME) == "darwin" ]; then \
 		brew install -q $(BREW); \
 		conda init --all; \
-	elif [ $(OS_NAME) == "darwin" ]; then \
-		brew install -q $(BREW); \
-		conda init --all; \
-	elif [ $(OS_NAME) == "linux" ] && ! [ -x $$HOME/miniconda3/bin/conda ]; then \
+	else \
+		echo
+
+.PHONY: install_prerequisites
+install_prerequisites: checkos install_xcode install_brew install_brew_packages
+	# Install prerequisites
+	if [ $(OS_NAME) == "linux" ] && ! [ -x $$HOME/miniconda3/bin/conda ]; then \
 		mkdir -p $$HOME/miniconda3; \
 		curl -L -o $$HOME/miniconda3/miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh; \
 		bash $$HOME/miniconda3/miniconda.sh -b -u -p $$HOME/miniconda3; \
@@ -39,9 +55,11 @@ install_prerequisites: checkos
 		$$HOME/miniconda3/bin/conda init --all; \
 		sudo add-apt-repository -y ppa:maxmind/ppa; \
 		sudo apt -q -y install $(APT); \
-	else \
+	elif [ $(OS_NAME) == "linux" ]; then \
 		sudo add-apt-repository -y ppa:maxmind/ppa; \
 		sudo apt -q -y install $(APT); \
+	else \
+		echo
 	fi
 
 .PHONY: update_packages
@@ -290,7 +308,7 @@ delete: uninstall
 	conda clean -y -a &> /dev/null
 	@rm -rf $$HOME/micromamba
 	@rm -rf $$HOME/.conda
-	@if [ $(OS_NAME) == "darwin" ]; then \
+	@-if [ $(OS_NAME) == "darwin" ]; then \
 		brew uninstall $(BREW); \
 		brew uninstall noseyparker; \
 		brew uninstall sn0int; \
