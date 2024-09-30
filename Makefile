@@ -39,7 +39,7 @@ install_brew:
 		echo 'eval "$$(/opt/homebrew/bin/brew shellenv)"' >> $$HOME/.zprofile; \
 		echo >> $$HOME/.bashrc; \
 		echo 'eval "$$(/opt/homebrew/bin/brew shellenv)"' >> $$HOME/.bashrc; \
-		eval "$$(/opt/homebrew/bin/brew shellenv)"
+		eval "$$(/opt/homebrew/bin/brew shellenv)"; \
 	else \
 		echo "# Homebrew already installed"; \
 	fi
