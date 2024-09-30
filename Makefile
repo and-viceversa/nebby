@@ -46,7 +46,8 @@ install_brew:
 
 .PHONY: install_brew_packages
 install_brew_packages:
-	if [ $(OS_NAME) == "darwin" ]; then \
+	@if [ $(OS_NAME) == "darwin" ]; then \
+		eval "$$(/opt/homebrew/bin/brew shellenv)"; \
 		brew install -q $(BREW); \
 		conda init --all; \
 	else \
@@ -75,6 +76,7 @@ install_prerequisites: checkos install_xcode install_brew install_brew_packages
 update_packages: checkos install_prerequisites
 	# Update packages
 	@if [ $(OS_NAME) == "darwin" ]; then \
+		eval "$$(/opt/homebrew/bin/brew shellenv)"; \
 		brew update && brew upgrade; \
 	else \
 		sudo apt -q -y update && sudo apt -q -y upgrade; \
@@ -224,6 +226,7 @@ trufflehog:
 noseyparker:
 	# Install noseyparker
 	@-if [ $(OS_NAME) == "darwin" ]; then \
+		eval "$$(/opt/homebrew/bin/brew shellenv)"; \
 		brew install noseyparker; \
 	else \
 		$(CONDA_ACTIVATE) nebby; \
@@ -290,6 +293,7 @@ blackbird:
 sn0int:
 	# Install sn0int
 	@if [ $(OS_NAME) == "darwin" ]; then \
+		eval "$$(/opt/homebrew/bin/brew shellenv)"; \
 		brew install sn0int; \
 	else \
 		curl -sSf https://apt.vulns.xyz/kpcyrd.pgp | sq keyring filter -B --handle 64B13F7117D6E07D661BBCE0FE763A64F5E54FD6 | sudo tee /etc/apt/trusted.gpg.d/apt-vulns-sexy.gpg > /dev/null; \
@@ -302,6 +306,7 @@ sn0int:
 dnstwist:
 	# Install dnstwist
 	@if [ $(OS_NAME) == "darwin" ]; then \
+		eval "$$(/opt/homebrew/bin/brew shellenv)"; \
 		brew install dnstwist; \
 	else \
 		sudo apt -q -y install dnstwist; \
@@ -318,6 +323,7 @@ delete: uninstall
 	@rm -rf $$HOME/micromamba
 	@rm -rf $$HOME/.conda
 	@-if [ $(OS_NAME) == "darwin" ]; then \
+		eval "$$(/opt/homebrew/bin/brew shellenv)"; \
 		brew uninstall $(BREW); \
 		brew uninstall noseyparker; \
 		brew uninstall sn0int; \
