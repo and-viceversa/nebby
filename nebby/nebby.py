@@ -27,6 +27,7 @@ def main():
     click.echo('sherlock - hunt down social media accounts by username across social networks')
     click.echo('quidam - extract instagram, twitter, and github information by username\ncd /nebby/clones/quidam')
     click.echo('blackbird - search for accounts by username\ncd /nebby/clones/blackbird')
+    click.echo('mailcat - find existing email addresses by username\ncd /nebby/clones/mailcat')
 
     click.echo('\n')
 

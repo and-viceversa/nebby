@@ -36,10 +36,18 @@ install_brew:
 		export NONINTERACTIVE=-1; \
 		curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | bash; \
 		echo >> $$HOME/.zprofile; \
-		echo 'eval "$$(/opt/homebrew/bin/brew shellenv)"' >> $$HOME/.zprofile; \
 		echo >> $$HOME/.bashrc; \
-		echo 'eval "$$(/opt/homebrew/bin/brew shellenv)"' >> $$HOME/.bashrc; \
-		eval "$$(/opt/homebrew/bin/brew shellenv)"; \
+		if [ $$(uname -m) == "arm64" ]; then \
+			echo 'eval "$$(/opt/homebrew/bin/brew shellenv)"' >> $$HOME/.zprofile; \
+			echo 'eval "$$(/opt/homebrew/bin/brew shellenv)"' >> $$HOME/.bashrc; \
+			eval "$$(/opt/homebrew/bin/brew shellenv)"; \
+		elif [ $$(uname -m) == "x86_64" ]; then \
+			echo 'eval "$$(/usr/local/bin/brew shellenv)"' >> $$HOME/.zprofile; \
+			echo 'eval "$$(/usr/local/bin/brew shellenv)"' >> $$HOME/.bashrc; \
+			eval "$$(/usr/local/bin/brew shellenv)"; \
+		else \
+			echo; \
+		fi; \
 	else \
 		echo "# Homebrew already installed"; \
 	fi
@@ -47,7 +55,6 @@ install_brew:
 .PHONY: install_brew_packages
 install_brew_packages:
 	@if [ $(OS_NAME) == "darwin" ]; then \
-		eval "$$(/opt/homebrew/bin/brew shellenv)"; \
 		brew install -q $(BREW); \
 		conda init --all; \
 	else \
@@ -76,7 +83,6 @@ install_prerequisites: checkos install_xcode install_brew install_brew_packages
 update_packages: checkos install_prerequisites
 	# Update packages
 	@if [ $(OS_NAME) == "darwin" ]; then \
-		eval "$$(/opt/homebrew/bin/brew shellenv)"; \
 		brew update && brew upgrade; \
 	else \
 		sudo apt -q -y update && sudo apt -q -y upgrade; \
@@ -226,7 +232,6 @@ trufflehog:
 noseyparker:
 	# Install noseyparker
 	@-if [ $(OS_NAME) == "darwin" ]; then \
-		eval "$$(/opt/homebrew/bin/brew shellenv)"; \
 		brew install noseyparker; \
 	else \
 		$(CONDA_ACTIVATE) nebby; \
@@ -293,7 +298,6 @@ blackbird:
 sn0int:
 	# Install sn0int
 	@if [ $(OS_NAME) == "darwin" ]; then \
-		eval "$$(/opt/homebrew/bin/brew shellenv)"; \
 		brew install sn0int; \
 	else \
 		curl -sSf https://apt.vulns.xyz/kpcyrd.pgp | sq keyring filter -B --handle 64B13F7117D6E07D661BBCE0FE763A64F5E54FD6 | sudo tee /etc/apt/trusted.gpg.d/apt-vulns-sexy.gpg > /dev/null; \
@@ -306,11 +310,18 @@ sn0int:
 dnstwist:
 	# Install dnstwist
 	@if [ $(OS_NAME) == "darwin" ]; then \
-		eval "$$(/opt/homebrew/bin/brew shellenv)"; \
 		brew install dnstwist; \
 	else \
 		sudo apt -q -y install dnstwist; \
 	fi
+
+.PHONY: mailcat
+mailcat:
+	@$(CONDA_ACTIVATE) nebby; \
+	cd clones; \
+	git clone https://github.com/sharsil/mailcat.git; \
+	cd mailcat; \
+	pip install -q -r requirements.txt
 
 
 .PHONY: delete
@@ -320,10 +331,9 @@ delete: uninstall
 	@-$(CONDA_ACTIVATE) base; \
 	conda init --reverse --all; \
 	conda clean -y -a &> /dev/null
-	@rm -rf $$HOME/micromamba
 	@rm -rf $$HOME/.conda
 	@-if [ $(OS_NAME) == "darwin" ]; then \
-		eval "$$(/opt/homebrew/bin/brew shellenv)"; \
+		brew uninstall --cask miniconda --force; \
 		brew uninstall $(BREW); \
 		brew uninstall noseyparker; \
 		brew uninstall sn0int; \
