@@ -2,7 +2,7 @@ all: setup env nebby tools
 
 SHELL := /bin/bash
 OS_NAME := $(shell uname -s | tr A-Z a-z)
-export PATH = $(shell echo $$PATH:$$HOME/miniconda3/bin)
+export PATH = $(shell echo $$PATH:$$HOME/miniconda3/bin:/opt/homebrew/bin:/usr/local/bin)
 CONDA_ACTIVATE=source $$(conda info --base)/etc/profile.d/conda.sh ; conda activate ; conda activate
 BREW := miniconda geoipupdate
 APT := pkg-config coreutils geoipupdate curl sq g++ gcc-multilib zsh
