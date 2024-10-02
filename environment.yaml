@@ -19,7 +19,7 @@ dependencies:
   # rust deps
   - rust
   # snscrape deps
-  - lxml
+  - lxml=4.9.2
   - libxml2
   - libxslt
   # python dev libraries
