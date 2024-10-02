@@ -1,10 +1,8 @@
 name: nebby
 channels:
   - conda-forge
-  - defaults
-  - anaconda
 dependencies:
-  - python=3.12.*
+  - python=3.11.0 # this is the only version that supports the wide dep base
   # general deps
   - cmake
   - boost # noseyparker source build
@@ -14,6 +12,7 @@ dependencies:
   - zlib # pillow
   - jpeg # pillow
   - libpcap # naabu on linux
+  - levenshtein # gitfive dep
   # golang deps
   - conda-forge::go
   - conda-forge::go-cgo
@@ -44,8 +43,6 @@ dependencies:
       - snscrape
       # https://github.com/m8sec/CrossLinked
       - crosslinked
-      # https://github.com/elceef/dnstwist
-      - dnstwist[full]
       # https://github.com/C3n7ral051nt4g3ncy
       - masto
       # https://github.com/bee-san

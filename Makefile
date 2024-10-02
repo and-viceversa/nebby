@@ -4,9 +4,9 @@ SHELL := /bin/bash
 OS_NAME := $(shell uname -s | tr A-Z a-z)
 export PATH = $(shell echo $$PATH:$$HOME/miniconda3/bin:/opt/homebrew/bin:/usr/local/bin)
 CONDA_ACTIVATE=source $$(conda info --base)/etc/profile.d/conda.sh ; conda activate ; conda activate
-BREW := miniconda geoipupdate
+BREW := miniconda geoipupdate jpeg zlib cmake
 APT := pkg-config coreutils geoipupdate curl sq g++ gcc-multilib zsh
-TOOLS := gitfive_temporary maigret ghunt subfinder alterx httpx dnsx naabu katana cloudlist trufflehog noseyparker fingerprintx lemmeknow awsrecon ares photon quidam blackbird sn0int dnstwist
+TOOLS := gitfive_temporary maigret ghunt subfinder alterx httpx dnsx naabu katana cloudlist trufflehog noseyparker fingerprintx lemmeknow awsrecon ares photon quidam blackbird sn0int dnstwist mailcat
 
 .PHONY: setup
 setup: checkos install_prerequisites update_packages
@@ -57,6 +57,7 @@ install_brew_packages:
 	@if [ $(OS_NAME) == "darwin" ]; then \
 		brew install -q $(BREW); \
 		conda init --all; \
+		conda config --add channels conda-forge; \
 	else \
 		echo; \
 	fi
