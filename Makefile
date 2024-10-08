@@ -48,6 +48,7 @@ install_brew:
 		else \
 			echo; \
 		fi; \
+		brew analytics off; \
 	else \
 		echo "# Homebrew already installed"; \
 	fi
@@ -335,7 +336,7 @@ delete: uninstall
 	conda clean -y -a &> /dev/null
 	@rm -rf $$HOME/.conda
 	@-if [ $(OS_NAME) == "darwin" ]; then \
-		brew uninstall --cask miniconda --force; \
+		brew uninstall --cask miniforge --force; \
 		brew uninstall $(BREW); \
 		brew uninstall noseyparker; \
 		brew uninstall sn0int; \
