@@ -49,3 +49,5 @@ dependencies:
       - pywhat[optimize]
       # https://github.com/Malfrats
       - xeuledoc
+      # https://github.com/MandConsultingGroup/porch-pirate
+      - porch-pirate
