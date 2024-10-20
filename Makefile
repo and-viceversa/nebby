@@ -2,7 +2,7 @@ all: setup env nebby tools
 
 SHELL := /bin/bash
 OS_NAME := $(shell uname -s | tr A-Z a-z)
-export PATH = $(shell echo $$PATH:$$HOME/miniconda3/bin:/opt/homebrew/bin:/usr/local/bin)
+export PATH = $(shell echo $$PATH:$$HOME/miniforge/bin:/opt/homebrew/bin:/usr/local/bin)
 CONDA_ACTIVATE=source $$(conda info --base)/etc/profile.d/conda.sh ; conda activate ; conda activate
 BREW := miniforge geoipupdate jpeg zlib cmake
 APT := pkg-config coreutils geoipupdate curl sq g++ gcc-multilib zsh chromium-chromedriver
@@ -65,12 +65,12 @@ install_brew_packages:
 .PHONY: install_prerequisites
 install_prerequisites: checkos install_xcode install_brew install_brew_packages
 	# Install prerequisites
-	@if [ $(OS_NAME) == "linux" ] && ! [ -x $$HOME/miniconda3/bin/conda ]; then \
-		mkdir -p $$HOME/miniconda3; \
-		curl -L -o $$HOME/miniconda3/miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh; \
-		bash $$HOME/miniconda3/miniconda.sh -b -u -p $$HOME/miniconda3; \
-		rm $$HOME/miniconda3/miniconda.sh; \
-		$$HOME/miniconda3/bin/conda init --all; \
+	@if [ $(OS_NAME) == "linux" ] && ! [ -x $$HOME/miniforge/bin/conda ]; then \
+		mkdir -p $$HOME/miniforge; \
+		curl -L -o $$HOME/miniforge/miniforge.sh https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh; \
+		bash $$HOME/miniforge/miniforge.sh -b -u -p $$HOME/miniforge; \
+		rm $$HOME/miniforge/miniforge.sh; \
+		$$HOME/miniforge/bin/conda init --all; \
 		sudo add-apt-repository -y ppa:maxmind/ppa; \
 		sudo apt -q -y install $(APT); \
 	elif [ $(OS_NAME) == "linux" ]; then \
@@ -348,7 +348,7 @@ delete: uninstall
 		sudo apt -q -y remove sn0int; \
 		sudo apt -q -y remove dnstwist; \
 		sudo apt -q -y autoremove; \
-		rm -rf $$HOME/miniconda3; \
+		rm -rf $$HOME/miniforge; \
 	fi
 
 .PHONY: clean
