@@ -91,8 +91,7 @@ update_packages: checkos install_prerequisites
 		sudo apt -q -y update && sudo apt -q -y upgrade; \
 	fi
 	@$(CONDA_ACTIVATE) base; \
-	conda update -q -y conda; \
-	conda update -q -y -n base conda
+	conda update -q -y -n base -c conda-forge conda
 
 .PHONY: env
 env: uninstall create
