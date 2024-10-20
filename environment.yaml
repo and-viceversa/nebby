@@ -47,3 +47,5 @@ dependencies:
       - masto
       # https://github.com/bee-san
       - pywhat[optimize]
+      # https://github.com/Malfrats
+      - xeuledoc
