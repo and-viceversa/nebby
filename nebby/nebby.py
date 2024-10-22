@@ -49,6 +49,8 @@ def main():
     click.echo('ghunt - an offensive Google framework focused on OSINT COOKIE REQUIRED!')
     click.echo('snscrape - a social networking service scraper in python')
     click.echo('masto - an OSINT tool written in python to gather intelligence on Mastodon users and instances')
+    click.echo('xeuledoc - Fetch information about a public Google document.')
+    click.echo('porch-pirate - comprehensive Postman recon / OSINT client and framework')
 
     click.echo('\n')
 
