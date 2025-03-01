@@ -6,7 +6,7 @@ export PATH = $(shell echo $$PATH:$$HOME/miniforge/bin:/opt/homebrew/bin:/usr/lo
 CONDA_ACTIVATE=source $$(conda info --base)/etc/profile.d/conda.sh ; conda activate ; conda activate
 BREW := miniforge geoipupdate jpeg zlib cmake
 APT := pkg-config coreutils geoipupdate curl sq g++ gcc-multilib zsh chromium-chromedriver
-TOOLS := gitfive_temporary maigret ghunt subfinder alterx httpx dnsx naabu katana cloudlist trufflehog noseyparker fingerprintx lemmeknow awsrecon ares photon quidam blackbird sn0int dnstwist mailcat
+TOOLS := gitfive_temporary maigret ghunt subfinder alterx httpx dnsx naabu katana cloudlist trufflehog noseyparker fingerprintx lemmeknow awsrecon ares photon quidam blackbird sn0int dnstwist mailcat linkook
 
 .PHONY: setup
 setup: checkos install_prerequisites update_packages
@@ -325,6 +325,11 @@ mailcat:
 	cd mailcat; \
 	pip install -q -r requirements.txt
 
+.PHONY: linkook
+linkook:
+	# Install linkook
+	@$(CONDA_ACTIVATE) nebby; \
+	pipx install linkook
 
 .PHONY: delete
 delete: uninstall
