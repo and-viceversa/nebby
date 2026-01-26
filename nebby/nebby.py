@@ -55,7 +55,7 @@ def main():
     click.echo('\n')
 
     click.echo('[+] Swiss Army Knife')
-    click.echo('photon - incredibly fast crawler designed for OSINT')
+    click.echo('photon - incredibly fast crawler designed for OSINT\ncd /nebby/clones/photon')
     click.echo('sn0int - semi-automatic OSINT framework and package manager')
 
     click.echo('\n')
@@ -80,7 +80,8 @@ def main():
     click.echo('fingerprintx - similar to httpx that also supports fingerprinting services like'
                '\nRDP, SSH, MySQL, PostgreSQL, Kafka, etc. fingerprintx can be used alongside port scanners like Naabu to fingerprint a set of ports identified during a port scan')
     click.echo('katana - crawling and spidering framework by URL')
-    click.echo('dnstwist - domain name permutation engine for detecting homograph phishing attacks, typo squatting, and brand impersonation')
+    click.echo(
+        'dnstwist - domain name permutation engine for detecting homograph phishing attacks, typo squatting, and brand impersonation')
 
     click.echo('\n')
 
@@ -98,7 +99,7 @@ def main():
 
     click.echo('[+] Other')
     click.echo('lemmeknow - identify mysterious text or analyze strings from captured network packets or anything')
-    click.echo('ares - text decoder similar to lemmeknow')
+    click.echo('ares - text decoder similar to lemmeknow. ares is the next generation of decoding tools')
     click.echo('alterx - fast and customizable subdomain wordlist generator using DSL')
     click.echo('pyWhat - identify anything. lets you identify emails, IP addresses, and more. accepts pcap or text.')
 

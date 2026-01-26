@@ -2,52 +2,18 @@ name: nebby
 channels:
   - conda-forge
 dependencies:
-  - python=3.11.0 # this is the only version that supports the wide dep base
+  - python=3.13.11
   # general deps
-  - cmake
-  - boost # noseyparker source build
-  - patch # noseyparker source build
-  - pkg-config # noseyparker source build
-  - coreutils # noseyparker source build
   - zlib # pillow
   - jpeg # pillow
   - libpcap # naabu on linux
-  - levenshtein # gitfive dep
   # golang deps
   - conda-forge::go
   - conda-forge::go-cgo
   # rust deps
   - rust
-  # snscrape deps
-  - lxml=4.9.2
-  - libxml2
-  - libxslt
   # python dev libraries
   - click
   # devops
   - git
-  # pip installs
-  - pip
-  - pipx
-  - pip:
-      - build
-      # https://github.com/sherlock-project/sherlock
-      - sherlock-project
-      # https://github.com/megadose
-      - holehe
-      - onionsearch
-      - nqntnqnqmb
-      - toutatis
-      - ignorant
-      # https://github.com/JustAnotherArchivist/snscrape
-      - snscrape
-      # https://github.com/m8sec/CrossLinked
-      - crosslinked
-      # https://github.com/C3n7ral051nt4g3ncy
-      - masto
-      # https://github.com/bee-san
-      - pywhat[optimize]
-      # https://github.com/Malfrats
-      - xeuledoc
-      # https://github.com/MandConsultingGroup/porch-pirate
-      - porch-pirate
+  - uv
