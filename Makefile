@@ -29,7 +29,7 @@ install_xcode:
 		echo "# Install xcode"; \
 		xcode-select --install; \
 	else \
-		echo; \
+		:; \
 	fi
 
 .PHONY: install_brew
@@ -50,11 +50,13 @@ install_brew:
 			echo 'eval "$$(/usr/local/bin/brew shellenv)"' >> $$HOME/.bashrc; \
 			eval "$$(/usr/local/bin/brew shellenv)"; \
 		else \
-			echo; \
+			:; \
 		fi; \
 		brew analytics off; \
-	else \
+	elif [ $(OS_NAME) == "darwin" ] && [ -n $$(command -v brew) ]; then \
 		echo "# Homebrew already installed"; \
+	else \
+		:; \
 	fi
 
 .PHONY: install_brew_packages
@@ -64,7 +66,7 @@ install_brew_packages:
 		brew install -q $(BREW); \
 		conda init -q --all; \
 	else \
-		echo; \
+		:; \
 	fi
 
 .PHONY: install_miniforge_linux
@@ -77,7 +79,7 @@ install_miniforge_linux:
 		rm $$HOME/miniforge/miniforge.sh; \
 		$$HOME/miniforge/bin/conda init -q --all; \
 	else \
-		echo; \
+		:; \
 	fi
 	@-$(CONDA_ACTIVATE) base; \
 	conda config -q --add channels conda-forge
